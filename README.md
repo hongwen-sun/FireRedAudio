@@ -61,6 +61,7 @@
 
 - [Quick Start](#quick-start-)
 - [Performance](#performance)
+- [Community Projects](#community-projects-)
 - [Limitations](#limitations)
 - [Usage Disclaimer](#usage-disclaimer)
 - [Citation](#citation)
@@ -93,7 +94,8 @@ uv run hf download FireRedTeam/FireRedAudio --local-dir pretrained_models/
 ```
 
 Alternatively, download the pretrained model using `modelscope` CLI:
-```
+
+```sh
 uv pip install modelscope
 uv run modelscope download --model FireRedTeam/FireRedAudio --local_dir pretrained_models/
 ```
@@ -166,7 +168,8 @@ torchaudio.save("voice_design.wav", res.audio.cpu(), sample_rate=24000)
 # speech recognition
 uv run inference.py --task asr --model pretrained_models/FireRedAudio --audio assets/examples/asr_zh_fleurs.wav
 
-# audio understanding and QA; several --audio for e.g. speaker verification,
+# audio understanding and QA; pass multiple files after one --audio
+# (e.g. --audio a.wav b.wav for speaker verification).
 # --enable-thinking to let the model reason first
 uv run inference.py --task understand --model pretrained_models/FireRedAudio --audio assets/examples/assets_mmau_test.wav \
     --prompt "What illness did Second speaker's friend suffer from?\n(A) Progressive arthritis (B) Progressive cancer (C) Acute pneumonia (D) Chronic heart disease" --enable-thinking --max-new-tokens 4096
@@ -195,6 +198,29 @@ uv run inference.py --task voice_design --model pretrained_models/FireRedAudio -
     --instruction "以女性高音区的清亮音色,表现出青年阶段的特质,音量略强,语速适中稍快,语调带有解释意味和急切的情感流露,确保语音流畅自然。" \
     --text "是我请他来的，可他什么也不知道，他来只是想打听一下，你们厂是不是有旧锅炉？" --output voice_design.wav
 ```
+
+
+### Web Demo (Gradio)
+
+A single-file Gradio app at [`app.py`](app.py) wraps all four tasks
+(zero-shot TTS · instruct TTS · speech editing · listen & understand) with the
+same weights and prompt templates as the CLI. Gradio is the only extra dep on
+top of the base install:
+
+```sh
+uv pip install gradio
+
+uv run app.py \
+    --model_path       pretrained_models/FireRedAudio \
+    --vae_decoder_path pretrained_models/RedAE_decoder/model.pt \
+    --host 0.0.0.0 --port 7860
+```
+
+Defaults to `http://0.0.0.0:7860`. The understanding tab exposes the full Qwen3
+sampling controls (`temperature`, `top_p`, `top_k`, `min_p`, `repetition_penalty`,
+`do_sample`) with a think-preset toggle that swaps in Qwen3's recommended
+`(temperature, top_p)` for reasoning / non-reasoning modes. If you're serving
+behind a reverse proxy, add `--root-path <prefix>`.
 
 
 ## Performance
@@ -441,6 +467,29 @@ uv run inference.py --task voice_design --model pretrained_models/FireRedAudio -
 </div>
 
 
+## Community Projects 🤝
+
+Third-party ports and integrations of FireRedAudio, maintained by the community.
+
+<div align="center">
+
+<table style="border-collapse:collapse; margin:0 auto; text-align:center;">
+  <thead>
+    <tr>
+      <th align="center" style="padding:6px 14px; border:1px solid #ddd; background-color:#f5f5f5;"><div align="center">Project</div></th>
+      <th align="center" style="padding:6px 14px; border:1px solid #ddd; background-color:#f5f5f5;"><div align="center">Description</div></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" style="padding:6px 14px; border:1px solid #ddd;"><a href="https://github.com/0xShug0/audio.cpp">audio.cpp</a></td>
+      <td align="left" style="padding:6px 14px; border:1px solid #ddd;">An all-in-one, pure C++ inference engine for audio models, powered by ggml.</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
 
 ## Limitations
 
@@ -460,11 +509,11 @@ uv run inference.py --task voice_design --model pretrained_models/FireRedAudio -
 ## Citation
 
 ```bib
-@article{fireredaudio,
-  title   = {FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation},
-  author  = {FireRed Team},
-  journal = {arXiv preprint},
-  year    = {2026},
+@article{li2026fireredaudio,
+  title={FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation},
+  author={FireRed Team},
+  journal={arXiv preprint arXiv:2608.24168},
+  year={2026}
 }
 ```
 
